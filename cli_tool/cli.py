@@ -1,45 +1,111 @@
-#!/usr/bin/env python3
-"""Command line interface for the tool."""
+import click
+import os
+from typing import List, Tuple
+import json
+from audio import AudioProcessor
+from model import BugClassifier
 
-import argparse
-import sys
-from typing import List, Optional
+def load_dataset(audio_dir: str) -> Tuple[List[str], List[str]]:
+    """Load dataset from directory structure.
+    
+    Expected structure:
+    audio_dir/
+        bug_type1/
+            recording1.wav
+            recording2.wav
+        bug_type2/
+            recording3.wav
+            ...
+    """
+    audio_files = []
+    labels = []
+    
+    for bug_type in os.listdir(audio_dir):
+        bug_dir = os.path.join(audio_dir, bug_type)
+        if not os.path.isdir(bug_dir):
+            continue
+            
+        for audio_file in os.listdir(bug_dir):
+            if audio_file.endswith(('.wav', '.mp3')):
+                audio_path = os.path.join(bug_dir, audio_file)
+                audio_files.append(audio_path)
+                labels.append(bug_type)
+    
+    return audio_files, labels
 
-def parse_args(args: Optional[List[str]] = None) -> argparse.Namespace:
-    """Parse command line arguments."""
-    parser = argparse.ArgumentParser(
-        description='Description of your command line tool',
-        formatter_class=argparse.ArgumentDefaultsHelpFormatter
-    )
-    
-    # Add arguments here
-    parser.add_argument(
-        '-v', '--version',
-        action='version',
-        version=f'%(prog)s {__import__("cli_tool").__version__}'
-    )
-    
-    parser.add_argument(
-        '--example',
-        help='Example argument',
-        type=str,
-        default='default_value'
-    )
-    
-    return parser.parse_args(args)
+@click.group()
+def cli():
+    """BugID: Identify bugs from audio recordings using machine learning."""
+    pass
 
-def main(args: Optional[List[str]] = None) -> int:
-    """Main entry point for the command line tool."""
-    parsed_args = parse_args(args)
+@cli.command()
+@click.argument('dataset_dir', type=click.Path(exists=True))
+@click.option('--model-output', '-m', default='bug_model.joblib',
+              help='Path to save trained model')
+@click.option('--report-output', '-r', default='training_report.json',
+              help='Path to save training report')
+def train(dataset_dir: str, model_output: str, report_output: str):
+    """Train a new bug classifier model.
     
-    try:
-        # Your main logic here
-        print(f"Example argument value: {parsed_args.example}")
-        return 0
-        
-    except Exception as e:
-        print(f"Error: {e}", file=sys.stderr)
-        return 1
+    DATASET_DIR should contain subdirectories, each named after a bug type,
+    containing audio recordings (.wav or .mp3) of that bug type.
+    """
+    click.echo("Loading dataset...")
+    audio_files, labels = load_dataset(dataset_dir)
+    
+    if not audio_files:
+        click.echo("Error: No audio files found in dataset directory", err=True)
+        return
+    
+    click.echo(f"Found {len(audio_files)} audio files across {len(set(labels))} bug types")
+    
+    # Process audio files
+    click.echo("Extracting audio features...")
+    processor = AudioProcessor()
+    features = processor.process_files(audio_files)
+    
+    # Train model
+    click.echo("Training classifier...")
+    classifier = BugClassifier()
+    report = classifier.train(features, labels)
+    
+    # Save model and report
+    classifier.save_model(model_output)
+    with open(report_output, 'w') as f:
+        json.dump(report, f, indent=2)
+    
+    click.echo(f"\nModel saved to: {model_output}")
+    click.echo(f"Training report saved to: {report_output}")
+    
+    # Display summary metrics
+    click.echo("\nTraining Results:")
+    if 'weighted avg' in report:
+        avg = report['weighted avg']
+        click.echo(f"Accuracy: {report['accuracy']:.3f}")
+        click.echo(f"Weighted Precision: {avg['precision']:.3f}")
+        click.echo(f"Weighted Recall: {avg['recall']:.3f}")
+        click.echo(f"Weighted F1-score: {avg['f1-score']:.3f}")
+
+@cli.command()
+@click.argument('audio_file', type=click.Path(exists=True))
+@click.option('--model', '-m', type=click.Path(exists=True), required=True,
+              help='Path to trained model file')
+def predict(audio_file: str, model: str):
+    """Predict bug type from an audio recording."""
+    # Load and process audio
+    processor = AudioProcessor()
+    features = processor.process_file(audio_file)
+    
+    # Load model and predict
+    classifier = BugClassifier(model_path=model)
+    prediction = classifier.predict(features.reshape(1, -1))
+    probabilities = classifier.predict_proba(features.reshape(1, -1))
+    
+    # Get probability for predicted class
+    pred_prob = max(probabilities[0])
+    
+    click.echo(f"\nPredicted bug type: {prediction[0]}")
+    click.echo(f"Confidence: {pred_prob:.2%}")
 
 if __name__ == '__main__':
-    sys.exit(main())
+    cli()
