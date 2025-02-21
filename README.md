@@ -1,7 +1,8 @@
 # BUGID
 
-Inspired by [Merlin Bird ID](https://merlin.allaboutbirds.org/), this project aims to identify insects by sound. This is an experiment for my own amusement and education to see how good (or not) a classifier I could throw together quickly. It is far less sophisticated and reliable than the Merlin app. See *Potential Improvements* below.
+This project aims to identify insects by sound. 
 
+Inspired by [Merlin Bird ID](https://merlin.allaboutbirds.org/) which allows you to identify birds by several methods including recording their calls. From what I can find, there is no equivalent Sound ID for insects. Is it inherently harder or simply has not gotten enough attention? This is an experiment for my own amusement and education to see how good (or not) a classifier I could throw together quickly. It is far less sophisticated and reliable than the Merlin Bird sound identification feature in the Merlin app, but can be made better! See *Potential Improvements* below.
 
 ## Usage
 
