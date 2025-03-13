@@ -2,6 +2,7 @@ import unittest
 import numpy as np
 import os
 import tempfile
+import tensorflow as tf
 from cli_tool.model import BugClassifier
 
 class TestBugClassifier(unittest.TestCase):
@@ -46,13 +47,17 @@ class TestBugClassifier(unittest.TestCase):
         self.classifier.train(self.X, self.y)
         
         # Save and load model
-        with tempfile.NamedTemporaryFile(suffix='.joblib', delete=False) as tmp:
+        with tempfile.NamedTemporaryFile(suffix='.tflite', delete=False) as tmp:
             model_path = tmp.name
             
         try:
             # Save model
             self.classifier.save_model(model_path)
             self.assertTrue(os.path.exists(model_path))
+            
+            # Check that classes file was also created
+            classes_path = os.path.splitext(model_path)[0] + '_classes.npy'
+            self.assertTrue(os.path.exists(classes_path))
             
             # Load model in new instance
             new_classifier = BugClassifier(model_path=model_path)
@@ -67,6 +72,9 @@ class TestBugClassifier(unittest.TestCase):
             # Cleanup
             if os.path.exists(model_path):
                 os.remove(model_path)
+            classes_path = os.path.splitext(model_path)[0] + '_classes.npy'
+            if os.path.exists(classes_path):
+                os.remove(classes_path)
     
     def test_predict_without_model(self):
         """Test prediction without a trained model."""

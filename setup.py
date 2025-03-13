@@ -10,6 +10,7 @@ setup(
         "numpy>=1.21.0",
         "scikit-learn>=1.0.0",
         "soundfile>=0.12.0",
+        "tensorflow==2.18.1",
     ],
     entry_points={
         "console_scripts": [

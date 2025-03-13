@@ -40,7 +40,7 @@ def cli():
 
 @cli.command()
 @click.argument('dataset_dir', type=click.Path(exists=True))
-@click.option('--model-output', '-m', default='bug_model.joblib',
+@click.option('--model-output', '-m', default='animal_sound_model.tflite',
               help='Path to save trained model')
 @click.option('--report-output', '-r', default='training_report.json',
               help='Path to save training report')
