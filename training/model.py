@@ -5,6 +5,7 @@ from sklearn.preprocessing import LabelEncoder
 from typing import Tuple, List, Optional, Dict
 import os
 import tensorflow as tf
+from tensorflow import keras
 
 # Ensure TensorFlow Lite converter is available
 try:
@@ -28,6 +29,7 @@ class BugClassifier:
     def _create_model(self):
         """Create a TensorFlow model for bug classification."""
         self.model = tf.keras.Sequential([
+            
             tf.keras.layers.Input(shape=(16,)),  # 16 features from AudioProcessor
             tf.keras.layers.Dense(32, activation='relu'),
             tf.keras.layers.Dropout(0.2),
@@ -60,10 +62,10 @@ class BugClassifier:
         num_classes = len(self.label_encoder.classes_)
         self.model = tf.keras.Sequential([
             tf.keras.layers.Input(shape=(16,)),  # 16 features from AudioProcessor
-            tf.keras.layers.Dense(32, activation='relu'),
+            tf.keras.layers.Dense(32, activation='relu', dtype=tf.float64),
             tf.keras.layers.Dropout(0.2),
-            tf.keras.layers.Dense(16, activation='relu'),
-            tf.keras.layers.Dense(num_classes, activation='softmax')
+            tf.keras.layers.Dense(16, activation='relu', dtype=tf.float64),
+            tf.keras.layers.Dense(num_classes, activation='softmax', dtype=tf.float64)
         ])
         
         self.model.compile(
