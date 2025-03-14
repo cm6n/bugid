@@ -124,9 +124,33 @@ class BugClassifier:
         if model_dir and not os.path.exists(model_dir):
             os.makedirs(model_dir)
 
+        # Save the label encoder classes
+        label_encoder_path = os.path.splitext(path)[0] + '_classes.npy'
+        np.save(label_encoder_path, self.label_encoder.classes_)
+
         # Save the Keras model
         self.model.save(path)
     
     def load_model(self, path: str):
         """Load trained model from disk."""
         self.model = tf.keras.models.load_model(path)
+        
+        # Load the label encoder classes
+        label_encoder_path = os.path.splitext(path)[0] + '_classes.npy'
+        if os.path.exists(label_encoder_path):
+            self.label_encoder.classes_ = np.load(label_encoder_path)
+        else:
+            # Fallback for models saved with the old method
+            print(f"Warning: Label encoder classes file not found: {label_encoder_path}")
+            print("Attempting to infer classes from model structure...")
+            
+            # Get the number of output classes from the model's output layer
+            output_layer = self.model.layers[-1]
+            num_classes = output_layer.units  # For Dense layer, units attribute gives the output dimension
+            
+            # Create generic class names (Class_0, Class_1, etc.)
+            generic_classes = np.array([f"Class_{i}" for i in range(num_classes)])
+            self.label_encoder.classes_ = generic_classes
+            
+            print(f"Inferred {num_classes} classes: {', '.join(generic_classes)}")
+            print("Note: These are generic class names. For accurate class names, retrain the model with the updated code.")
