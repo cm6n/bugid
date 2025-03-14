@@ -57,15 +57,16 @@ class BugClassifier:
         # Encode labels
         self.label_encoder.fit(y)
         y_encoded = self.label_encoder.transform(y)
+        y_encoded = y_encoded.astype(np.int64)
         
         # Adjust output layer to match number of classes
         num_classes = len(self.label_encoder.classes_)
         self.model = tf.keras.Sequential([
             tf.keras.layers.Input(shape=(16,)),  # 16 features from AudioProcessor
-            tf.keras.layers.Dense(32, activation='relu', dtype=tf.float64),
+            tf.keras.layers.Dense(16, activation='relu', dtype=tf.float16),
             tf.keras.layers.Dropout(0.2),
-            tf.keras.layers.Dense(16, activation='relu', dtype=tf.float64),
-            tf.keras.layers.Dense(num_classes, activation='softmax', dtype=tf.float64)
+            tf.keras.layers.Dense(16, activation='relu', dtype=tf.float16),
+            tf.keras.layers.Dense(num_classes, activation='softmax', dtype=tf.float16)
         ])
         
         self.model.compile(
@@ -80,12 +81,13 @@ class BugClassifier:
         )
         
         # Train model
+        self.model.run_eagerly = False
         self.model.fit(
             X_train, y_train_encoded,
             epochs=50,
             batch_size=32,
             validation_data=(X_test, y_test_encoded),
-            verbose=0
+            verbose=0,
         )
         
         # Evaluate
