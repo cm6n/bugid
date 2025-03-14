@@ -123,60 +123,10 @@ class BugClassifier:
         model_dir = os.path.dirname(path)
         if model_dir and not os.path.exists(model_dir):
             os.makedirs(model_dir)
-            
-        # Convert model to TensorFlow Lite format
-        try:
-            # For TensorFlow 2.x
-            converter = tf.lite.TFLiteConverter.from_keras_model(self.model)
-        except AttributeError:
-            # For older TensorFlow versions
-            converter = lite.TFLiteConverter.from_keras_model(self.model)
-        tflite_model = converter.convert()
-        
-        # Save the TFLite model
-        with open(path, 'wb') as f:
-            f.write(tflite_model)
-            
-        # Save label encoder classes alongside the model
-        classes_path = os.path.splitext(path)[0] + '_classes.npy'
-        np.save(classes_path, self.label_encoder.classes_)
+
+        # Save the Keras model
+        self.model.save(path)
     
     def load_model(self, path: str):
         """Load trained model from disk."""
-        # Load TFLite model
-        try:
-            # For TensorFlow 2.x
-            self.interpreter = tf.lite.Interpreter(model_path=path)
-        except AttributeError:
-            # For older TensorFlow versions
-            self.interpreter = lite.Interpreter(model_path=path)
-        self.interpreter.allocate_tensors()
-        
-        # Get input and output tensors
-        self.input_details = self.interpreter.get_input_details()
-        self.output_details = self.interpreter.get_output_details()
-        
-        # Load label encoder classes
-        classes_path = os.path.splitext(path)[0] + '_classes.npy'
-        if os.path.exists(classes_path):
-            self.label_encoder.classes_ = np.load(classes_path, allow_pickle=True)
-        
-        # Create a wrapper function to mimic the Keras model API
-        def predict_fn(X):
-            input_shape = self.input_details[0]['shape']
-            if len(X.shape) == 1:
-                X = X.reshape(1, -1)
-                
-            results = np.zeros((X.shape[0], len(self.label_encoder.classes_)))
-            for i in range(X.shape[0]):
-                self.interpreter.set_tensor(self.input_details[0]['index'], X[i:i+1].astype(np.float32))
-                self.interpreter.invoke()
-                results[i] = self.interpreter.get_tensor(self.output_details[0]['index'])[0]
-            return results
-        
-        # Create a wrapper model object
-        class TFLiteModel:
-            def __init__(self, predict_function):
-                self.predict = predict_function
-                
-        self.model = TFLiteModel(predict_fn)
+        self.model = tf.keras.models.load_model(path)
