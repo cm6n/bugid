@@ -30,3 +30,5 @@ htmlcov/
 # OS
 .DS_Store
 Thumbs.db
+
+training/training_report.json
