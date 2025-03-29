@@ -63,10 +63,10 @@ class BugClassifier:
         num_classes = len(self.label_encoder.classes_)
         self.model = tf.keras.Sequential([
             tf.keras.layers.Input(shape=(16,)),  # 16 features from AudioProcessor
-            tf.keras.layers.Dense(16, activation='relu', dtype=tf.float16),
+            tf.keras.layers.Dense(16, activation='relu', dtype=tf.float32),  # Using float32 for better compatibility
             tf.keras.layers.Dropout(0.2),
-            tf.keras.layers.Dense(16, activation='relu', dtype=tf.float16),
-            tf.keras.layers.Dense(num_classes, activation='softmax', dtype=tf.float16)
+            tf.keras.layers.Dense(16, activation='relu', dtype=tf.float32),  # Using float32 for better compatibility
+            tf.keras.layers.Dense(num_classes, activation='softmax', dtype=tf.float32)  # Using float32 for better compatibility
         ])
         
         self.model.compile(
@@ -119,8 +119,7 @@ class BugClassifier:
         
         Note: The saved model requires the TensorFlow Lite Flex delegate
         to be linked when loading the model for inference, as it uses
-        TensorFlow ops (BiasAdd, MatMul, Relu, Softmax) that aren't
-        natively supported in TFLite.
+        TensorFlow ops that aren't natively supported in TFLite.
         """
         if not hasattr(self, 'model'):
             raise RuntimeError("No trained model to save")
@@ -134,15 +133,23 @@ class BugClassifier:
         label_encoder_path = os.path.splitext(path)[0] + '_classes.npy'
         np.save(label_encoder_path, self.label_encoder.classes_)
 
-        # Convert the Keras model to TensorFlow Lite
+        # Convert the Keras model to TensorFlow Lite with improved compatibility
         converter = tf.lite.TFLiteConverter.from_keras_model(self.model)
-        # Enable TF Select to support operations not natively available in TFLite
+        
+        # Configure for better compatibility with Android TFLite
         converter.target_spec.supported_ops = [
             tf.lite.OpsSet.TFLITE_BUILTINS,  # enable TensorFlow Lite ops
             tf.lite.OpsSet.SELECT_TF_OPS  # enable TensorFlow ops
         ]
-        # Optimize for size
+        
+        # Set additional options for better compatibility
+        converter.allow_custom_ops = True
+        converter.experimental_new_converter = True
+        
+        # Optimize for size but maintain compatibility
         converter.optimizations = [tf.lite.Optimize.DEFAULT]
+        
+        # Convert model
         tflite_model = converter.convert()
         
         # Save the model
