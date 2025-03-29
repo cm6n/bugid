@@ -115,7 +115,13 @@ class BugClassifier:
         return self.model.predict(X)
     
     def save_model(self, path: str):
-        """Save trained model to disk as TensorFlow Lite model."""
+        """Save trained model to disk as TensorFlow Lite model.
+        
+        Note: The saved model requires the TensorFlow Lite Flex delegate
+        to be linked when loading the model for inference, as it uses
+        TensorFlow ops (BiasAdd, MatMul, Relu, Softmax) that aren't
+        natively supported in TFLite.
+        """
         if not hasattr(self, 'model'):
             raise RuntimeError("No trained model to save")
         
@@ -128,29 +134,125 @@ class BugClassifier:
         label_encoder_path = os.path.splitext(path)[0] + '_classes.npy'
         np.save(label_encoder_path, self.label_encoder.classes_)
 
-        # Save the Keras model
-        self.model.save(path)
+        # Convert the Keras model to TensorFlow Lite
+        converter = tf.lite.TFLiteConverter.from_keras_model(self.model)
+        # Enable TF Select to support operations not natively available in TFLite
+        converter.target_spec.supported_ops = [
+            tf.lite.OpsSet.TFLITE_BUILTINS,  # enable TensorFlow Lite ops
+            tf.lite.OpsSet.SELECT_TF_OPS  # enable TensorFlow ops
+        ]
+        # Optimize for size
+        converter.optimizations = [tf.lite.Optimize.DEFAULT]
+        tflite_model = converter.convert()
+        
+        # Save the model
+        with open(path, 'wb') as f:
+            f.write(tflite_model)
+        
+        # Create a README file with instructions for loading the model
+        readme_path = os.path.splitext(path)[0] + '_README.txt'
+        with open(readme_path, 'w') as f:
+            f.write("""
+TensorFlow Lite Model with Flex Ops
+===================================
+
+This model uses TensorFlow operations that aren't natively supported in TFLite.
+When loading this model for inference, you need to ensure the TensorFlow Lite
+Flex delegate is linked.
+
+In Python, you can load the model with:
+
+```python
+import tensorflow as tf
+
+# Load the TFLite model and allocate tensors
+interpreter = tf.lite.Interpreter(
+    model_path="path/to/model.tflite",
+    experimental_delegates=None  # Flex delegate is automatically loaded when needed
+)
+interpreter.allocate_tensors()
+```
+
+For Android/iOS or other platforms, see:
+https://www.tensorflow.org/lite/guide/ops_select
+""")
+
     
     def load_model(self, path: str):
-        """Load trained model from disk."""
-        self.model = tf.keras.models.load_model(path)
+        """Load trained model from disk.
+        
+        This method can load either:
+        1. A Keras model (.h5 or SavedModel format)
+        2. A TensorFlow Lite model (.tflite)
+        
+        For TFLite models with Flex ops, it ensures the Flex delegate is properly linked.
+        """
+        # Check if this is a TFLite model
+        if path.endswith('.tflite'):
+            # Load TFLite model with Flex delegate support
+            try:
+                # Create the interpreter with automatic Flex delegate loading
+                self.interpreter = tf.lite.Interpreter(
+                    model_path=path,
+                    experimental_delegates=None  # Flex delegate is automatically loaded when needed
+                )
+                self.interpreter.allocate_tensors()
+                
+                # Get input and output details
+                self.input_details = self.interpreter.get_input_details()
+                self.output_details = self.interpreter.get_output_details()
+                
+                # Create a wrapper function to mimic the Keras model predict API
+                def predict_fn(x):
+                    # Ensure input is the right shape and type
+                    input_shape = self.input_details[0]['shape']
+                    if len(x.shape) == 1:
+                        x = np.expand_dims(x, axis=0)  # Add batch dimension
+                    
+                    # Set the input tensor
+                    self.interpreter.set_tensor(self.input_details[0]['index'], x.astype(np.float32))
+                    
+                    # Run inference
+                    self.interpreter.invoke()
+                    
+                    # Get the output tensor
+                    output = self.interpreter.get_tensor(self.output_details[0]['index'])
+                    return output
+                
+                # Create a simple object with a predict method to mimic Keras model API
+                class ModelWrapper:
+                    def __init__(self, predict_function):
+                        self.predict = predict_function
+                
+                self.model = ModelWrapper(predict_fn)
+                
+            except Exception as e:
+                raise RuntimeError(f"Error loading TFLite model: {str(e)}\n"
+                                  f"Note: This model requires the TensorFlow Lite Flex delegate to be linked.")
+        else:
+            # Load regular Keras model
+            self.model = tf.keras.models.load_model(path)
         
         # Load the label encoder classes
         label_encoder_path = os.path.splitext(path)[0] + '_classes.npy'
         if os.path.exists(label_encoder_path):
             self.label_encoder.classes_ = np.load(label_encoder_path)
         else:
-            # Fallback for models saved with the old method
-            print(f"Warning: Label encoder classes file not found: {label_encoder_path}")
-            print("Attempting to infer classes from model structure...")
-            
-            # Get the number of output classes from the model's output layer
-            output_layer = self.model.layers[-1]
-            num_classes = output_layer.units  # For Dense layer, units attribute gives the output dimension
-            
-            # Create generic class names (Class_0, Class_1, etc.)
-            generic_classes = np.array([f"Class_{i}" for i in range(num_classes)])
-            self.label_encoder.classes_ = generic_classes
-            
-            print(f"Inferred {num_classes} classes: {', '.join(generic_classes)}")
-            print("Note: These are generic class names. For accurate class names, retrain the model with the updated code.")
+            # For TFLite models, we can't infer classes from model structure
+            # For Keras models, we can try to infer from the output layer
+            if not path.endswith('.tflite') and hasattr(self.model, 'layers'):
+                print(f"Warning: Label encoder classes file not found: {label_encoder_path}")
+                print("Attempting to infer classes from model structure...")
+                
+                # Get the number of output classes from the model's output layer
+                output_layer = self.model.layers[-1]
+                num_classes = output_layer.units  # For Dense layer, units attribute gives the output dimension
+                
+                # Create generic class names (Class_0, Class_1, etc.)
+                generic_classes = np.array([f"Class_{i}" for i in range(num_classes)])
+                self.label_encoder.classes_ = generic_classes
+                
+                print(f"Inferred {num_classes} classes: {', '.join(generic_classes)}")
+                print("Note: These are generic class names. For accurate class names, retrain the model with the updated code.")
+            else:
+                raise RuntimeError(f"Label encoder classes file not found: {label_encoder_path}")
