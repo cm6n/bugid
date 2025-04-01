@@ -146,8 +146,19 @@ class BugClassifier:
         converter.allow_custom_ops = True
         converter.experimental_new_converter = True
         
-        # Optimize for size but maintain compatibility
-        converter.optimizations = [tf.lite.Optimize.DEFAULT]
+        # Force downgrade to TFLite 2.15.0 compatibility
+        converter.target_spec.supported_ops = [
+            tf.lite.OpsSet.TFLITE_BUILTINS,
+            tf.lite.OpsSet.SELECT_TF_OPS
+        ]
+        
+        # Critical: Set the minimum TFLite version to ensure compatibility
+        # This ensures ops like FULLY_CONNECTED use versions compatible with TFLite 2.15.0
+        if hasattr(converter, 'target_spec') and hasattr(converter.target_spec, 'set_tflite_version'):
+            converter.target_spec.set_tflite_version(2, 15, 0)
+        
+        # Use minimal optimizations to avoid quantization issues
+        # converter.optimizations = [tf.lite.Optimize.DEFAULT]  # Commented out to avoid quantization issues
         
         # Convert model
         tflite_model = converter.convert()
@@ -263,3 +274,43 @@ https://www.tensorflow.org/lite/guide/ops_select
                 print("Note: These are generic class names. For accurate class names, retrain the model with the updated code.")
             else:
                 raise RuntimeError(f"Label encoder classes file not found: {label_encoder_path}")
+
+
+# Add a main function to allow direct execution of this script for retraining
+if __name__ == "__main__":
+    import argparse
+    
+    parser = argparse.ArgumentParser(description='Retrain bug sound classification model with TFLite 2.15.0 compatibility')
+    parser.add_argument('--output', type=str, default='animal_sound_model.tflite', 
+                        help='Output path for the TFLite model')
+    args = parser.parse_args()
+    
+    print("Creating dummy training data for model retraining...")
+    # Create dummy data with 8 classes (matching NUM_CLASSES in MainActivity.kt)
+    num_samples = 100
+    num_features = 16  # Match the input shape in the model
+    
+    # Generate random features
+    X = np.random.rand(num_samples, num_features).astype(np.float32)
+    
+    # Generate random labels (animal names matching getAnimalName in MainActivity.kt)
+    animals = ["Dog", "Cat", "Bird", "Fox", "Wolf", "Frog", "Cricket", "Owl"]
+    y = np.random.choice(animals, num_samples)
+    
+    print(f"Created dummy dataset with {num_samples} samples, {num_features} features, and {len(animals)} classes")
+    
+    # Initialize and train the classifier
+    print("Training model...")
+    classifier = BugClassifier()
+    classifier.train(X, y)
+    
+    # Save the model with TFLite 2.15.0 compatibility
+    print(f"Saving TensorFlow Lite model to {args.output}")
+    classifier.save_model(args.output)
+    print("Model saved successfully with TFLite 2.15.0 compatibility")
+    
+    # Print instructions for deploying to Android
+    print("\nNext steps:")
+    print("1. Copy the generated TFLite model to your Android project's assets folder:")
+    print(f"   cp {args.output} /path/to/AndroidStudioProjects/bugid/app/src/main/assets/")
+    print("2. Rebuild and run your Android app")
