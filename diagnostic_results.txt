@@ -1,0 +1,119 @@
+Signal comparison:
+Original signal shape: (44100,)
+Signal from file shape: (44100,)
+Are signals identical? False
+Max difference between signals: 1.5256341592079226e-05
+Mean difference between signals: 7.562190413809905e-06
+
+Feature comparison:
+Feature 0:
+  Direct extraction: -401.73987685561866
+  From loaded file: -401.7397155761719
+  From process_file: -401.7397155761719
+  Diff (direct vs loaded): 0.00016127944678601125
+  Diff (direct vs process_file): 0.00016127944678601125
+Feature 1:
+  Direct extraction: 75.6147655865019
+  From loaded file: 75.6146011352539
+  From process_file: 75.6146011352539
+  Diff (direct vs loaded): 0.0001644512479970217
+  Diff (direct vs process_file): 0.0001644512479970217
+Feature 2:
+  Direct extraction: 56.137636809067416
+  From loaded file: 56.13743591308594
+  From process_file: 56.13743591308594
+  Diff (direct vs loaded): 0.00020089598147876586
+  Diff (direct vs process_file): 0.00020089598147876586
+Feature 3:
+  Direct extraction: 36.5071603808275
+  From loaded file: 36.50727462768555
+  From process_file: 36.50727462768555
+  Diff (direct vs loaded): 0.00011424685804684032
+  Diff (direct vs process_file): 0.00011424685804684032
+Feature 4:
+  Direct extraction: 15.26405548314591
+  From loaded file: 15.263734817504883
+  From process_file: 15.263734817504883
+  Diff (direct vs loaded): 0.0003206656410270625
+  Diff (direct vs process_file): 0.0003206656410270625
+Feature 5:
+  Direct extraction: -7.114003705903218
+  From loaded file: -7.114266395568848
+  From process_file: -7.114266395568848
+  Diff (direct vs loaded): 0.00026268966562970064
+  Diff (direct vs process_file): 0.00026268966562970064
+Feature 6:
+  Direct extraction: -26.566294254453013
+  From loaded file: -26.566181182861328
+  From process_file: -26.566181182861328
+  Diff (direct vs loaded): 0.0001130715916843883
+  Diff (direct vs process_file): 0.0001130715916843883
+Feature 7:
+  Direct extraction: -41.1231532237383
+  From loaded file: -41.12349319458008
+  From process_file: -41.12349319458008
+  Diff (direct vs loaded): 0.0003399708417788361
+  Diff (direct vs process_file): 0.0003399708417788361
+Feature 8:
+  Direct extraction: -49.49855444941699
+  From loaded file: -49.498680114746094
+  From process_file: -49.498680114746094
+  Diff (direct vs loaded): 0.0001256653291008547
+  Diff (direct vs process_file): 0.0001256653291008547
+Feature 9:
+  Direct extraction: -51.12709481360108
+  From loaded file: -51.126956939697266
+  From process_file: -51.126956939697266
+  Diff (direct vs loaded): 0.00013787390381736486
+  Diff (direct vs process_file): 0.00013787390381736486
+Feature 10:
+  Direct extraction: -46.683646788693345
+  From loaded file: -46.6838264465332
+  From process_file: -46.6838264465332
+  Diff (direct vs loaded): 0.00017965783985829376
+  Diff (direct vs process_file): 0.00017965783985829376
+Feature 11:
+  Direct extraction: -37.4970678805853
+  From loaded file: -37.496925354003906
+  From process_file: -37.496925354003906
+  Diff (direct vs loaded): 0.0001425265813921328
+  Diff (direct vs process_file): 0.0001425265813921328
+Feature 12:
+  Direct extraction: -25.446064997184216
+  From loaded file: -25.44609832763672
+  From process_file: -25.44609832763672
+  Diff (direct vs loaded): 3.333045250286659e-05
+  Diff (direct vs process_file): 3.333045250286659e-05
+Feature 13:
+  Direct extraction: 448.3530274596211
+  From loaded file: 452.361408122938
+  From process_file: 452.361408122938
+  Diff (direct vs loaded): 4.008380663316871
+  Diff (direct vs process_file): 4.008380663316871
+Feature 14:
+  Direct extraction: 14.112332568320825
+  From loaded file: 14.116044107458963
+  From process_file: 14.116044107458963
+  Diff (direct vs loaded): 0.0037115391381377094
+  Diff (direct vs process_file): 0.0037115391381377094
+Feature 15:
+  Direct extraction: 457.14742726293105
+  From loaded file: 457.14742726293105
+  From process_file: 457.14742726293105
+  Diff (direct vs loaded): 0.0
+  Diff (direct vs process_file): 0.0
+
+Detailed analysis of Feature 14 (Spectral centroid):
+Direct extraction: 448.3530274596211
+From file: 452.361408122938
+Difference: 4.008380663316871
+
+Direct librosa calculation with explicit parameters (bandwidth):
+Bandwidth from original signal: 93.7588841160341
+Bandwidth from file signal: 303.86781281634603
+Difference: 210.10892870031194
+
+Direct librosa calculation:
+Centroid from original signal: 448.3530274596208
+Centroid from file signal: 452.361408122938
+Difference: 4.008380663317155
