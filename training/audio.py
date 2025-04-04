@@ -43,24 +43,29 @@ class AudioProcessor:
         # Return mean bandwidth across frames
         return np.mean(deviation)
     
+    def get_placeholder_mfccs(self, signal: np.ndarray) -> np.ndarray:
+        """
+        Return placeholder MFCC values (0.0 through 12.0) instead of calculating them.
+        
+        This ensures consistency between Python and Android implementations.
+        """
+        # Return placeholder values 0.0 through 12.0
+        return np.array([float(i) for i in range(13)])
+    
     def extract_features(self, signal: np.ndarray) -> np.ndarray:
         """Extract relevant audio features for bug identification.
         
         Features extracted:
-        - MFCCs (Mel-frequency cepstral coefficients)
+        - MFCCs (placeholder values 0.0 through 12.0)
         - Spectral centroid
         - Spectral bandwidth
         - Spectral rolloff
         """
         features = []
         
-        # Normalize the signal to ensure consistent feature extraction
-        signal = librosa.util.normalize(signal)
-        
-        # Extract MFCCs
-        mfccs = librosa.feature.mfcc(y=signal, sr=self.sample_rate, n_mfcc=13)
-        mfccs_mean = np.mean(mfccs, axis=1)
-        features.extend(mfccs_mean)
+        # Use placeholder MFCC values instead of calculating them
+        mfccs = self.get_placeholder_mfccs(signal)
+        features.extend(mfccs)
         
         # Spectral centroid
         centroid = librosa.feature.spectral_centroid(y=signal, sr=self.sample_rate)

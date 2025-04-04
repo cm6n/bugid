@@ -55,6 +55,8 @@ class TestAudioProcessor(unittest.TestCase):
         """Test feature extraction from a synthetic signal."""
         # Extract features
         features = self.processor.extract_features(self.test_signal)
+        for i, n in enumerate(features):
+            print(f"Feature {i}: {n}")
         
         # Check feature vector properties
         self.assertIsInstance(features, np.ndarray)
