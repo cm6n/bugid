@@ -3,7 +3,7 @@ from unittest.mock import patch, MagicMock
 import tempfile
 import os
 from click.testing import CliRunner
-from cli_tool.cli import cli, load_dataset
+from training.cli import cli, load_dataset
 
 class TestCLI(unittest.TestCase):
     def setUp(self):
@@ -29,8 +29,8 @@ class TestCLI(unittest.TestCase):
             self.assertEqual(labels.count('cricket'), 2)
             self.assertEqual(labels.count('beetle'), 1)
     
-    @patch('cli_tool.cli.AudioProcessor')
-    @patch('cli_tool.cli.BugClassifier')
+    @patch('training.cli.AudioProcessor')
+    @patch('training.cli.BugClassifier')
     def test_train_command(self, mock_classifier, mock_processor):
         """Test train command workflow."""
         # Setup mocks
@@ -61,8 +61,8 @@ class TestCLI(unittest.TestCase):
             mock_processor_instance.process_files.assert_called_once()
             mock_classifier_instance.train.assert_called_once()
             
-    @patch('cli_tool.cli.AudioProcessor')
-    @patch('cli_tool.cli.BugClassifier')
+    @patch('training.cli.AudioProcessor')
+    @patch('training.cli.BugClassifier')
     def test_predict_command(self, mock_classifier, mock_processor):
         """Test predict command workflow."""
         # Setup mocks

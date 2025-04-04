@@ -2,8 +2,8 @@ import click
 import os
 from typing import List, Tuple
 import json
-from audio import AudioProcessor
-from model import BugClassifier
+from training.audio import AudioProcessor
+from training.model import BugClassifier
 
 def load_dataset(audio_dir: str) -> Tuple[List[str], List[str]]:
     """Load dataset from directory structure.

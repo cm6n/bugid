@@ -3,7 +3,7 @@ import numpy as np
 import os
 import tempfile
 import tensorflow as tf
-from cli_tool.model import BugClassifier
+from training.model import BugClassifier
 
 class TestBugClassifier(unittest.TestCase):
     def setUp(self):
