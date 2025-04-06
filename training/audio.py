@@ -43,20 +43,36 @@ class AudioProcessor:
         # Return mean bandwidth across frames
         return np.mean(deviation)
     
-    def get_placeholder_mfccs(self, signal: np.ndarray) -> np.ndarray:
+    def get_mfccs(self, signal: np.ndarray) -> np.ndarray:
         """
-        Return placeholder MFCC values (0.0 through 12.0) instead of calculating them.
+        Calculate MFCC values using librosa.
         
-        This ensures consistency between Python and Android implementations.
+        Returns 13 MFCC coefficients to match the Android implementation.
         """
-        # Return placeholder values 0.0 through 12.0
-        return np.array([float(i) for i in range(13)])
+        # Use librosa to calculate MFCCs
+        # Use n_fft and hop_length values that match the Android implementation
+        n_fft = 2048
+        hop_length = 512
+        
+        # Calculate MFCCs using librosa
+        mfccs = librosa.feature.mfcc(
+            y=signal, 
+            sr=self.sample_rate, 
+            n_mfcc=13,  # Get 13 coefficients to match Android
+            n_fft=n_fft,
+            hop_length=hop_length
+        )
+        
+        # Take the mean of each coefficient across all frames
+        mfcc_means = np.mean(mfccs, axis=1)
+        
+        return mfcc_means
     
     def extract_features(self, signal: np.ndarray) -> np.ndarray:
         """Extract relevant audio features for bug identification.
         
         Features extracted:
-        - MFCCs (placeholder values 0.0 through 12.0)
+        - 13 MFCCs calculated using librosa
         - Spectral centroid
         - Spectral bandwidth
         - Spectral rolloff
@@ -65,8 +81,8 @@ class AudioProcessor:
         """
         features = []
         
-        # Use placeholder MFCC values instead of calculating them
-        mfccs = self.get_placeholder_mfccs(signal)
+        # Calculate MFCCs using librosa
+        mfccs = self.get_mfccs(signal)
         features.extend(mfccs)
         
         # Calculate features to match Android implementation
