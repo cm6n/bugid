@@ -9,9 +9,29 @@ class AudioProcessor:
         self.sample_rate = sample_rate
         
     def load_audio(self, file_path: str) -> Tuple[np.ndarray, int]:
-        """Load audio file and return signal and sample rate."""
+        """Load audio file and return signal and sample rate.
+        
+        If the audio is stereo, only the left channel will be used.
+        """
         try:
-            signal, sr = librosa.load(file_path, sr=self.sample_rate)
+            # librosa.load by default returns mono audio, but let's be explicit
+            # mono=True will average all channels, but we want to use only the left channel
+            # So we'll load with mono=False first to check if it's stereo
+            signal_all_channels, sr = librosa.load(file_path, sr=self.sample_rate, mono=False)
+            
+            # Check if the audio is stereo (has 2 or more channels)
+            if signal_all_channels.ndim > 1 and signal_all_channels.shape[0] >= 2:
+                print(f"Audio file {file_path} has {signal_all_channels.shape[0]} channels. Using left channel only.")
+                # Take only the left channel (first channel)
+                signal = signal_all_channels[0]
+            else:
+                # If it's already mono, just use it as is
+                signal = signal_all_channels
+                
+                # If loaded as mono but returned as 2D array with 1 row, flatten it
+                if signal.ndim > 1:
+                    signal = signal.flatten()
+                    
             return signal, sr
         except Exception as e:
             raise RuntimeError(f"Error loading audio file: {str(e)}")
