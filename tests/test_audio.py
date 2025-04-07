@@ -60,8 +60,8 @@ class TestAudioProcessor(unittest.TestCase):
         
         # Check feature vector properties
         self.assertIsInstance(features, np.ndarray)
-        # Expected length: 13 MFCCs + centroid + bandwidth + rolloff = 16
-        self.assertEqual(len(features), 16)
+        # Expected length: 40 MFCCs + centroid + bandwidth + rolloff = 43
+        self.assertEqual(len(features), 43)
         
         # Check feature values are finite
         self.assertTrue(np.all(np.isfinite(features)))
@@ -74,7 +74,7 @@ class TestAudioProcessor(unittest.TestCase):
         mfccs = librosa.feature.mfcc(
             y=self.test_signal, 
             sr=self.sample_rate, 
-            n_mfcc=13,
+            n_mfcc=40,
             n_fft=n_fft,
             hop_length=hop_length
         )
@@ -84,7 +84,7 @@ class TestAudioProcessor(unittest.TestCase):
         extracted_mfccs = self.processor.get_mfccs(self.test_signal)
         
         # Check that our extracted MFCCs match librosa's (should be identical)
-        self.assertEqual(len(extracted_mfccs), 13)
+        self.assertEqual(len(extracted_mfccs), 40)
         
         # Print MFCC values for debugging
         print("\nMFCC comparison:")
@@ -94,9 +94,9 @@ class TestAudioProcessor(unittest.TestCase):
         # Since we're using librosa directly in our implementation, the values should be identical
         self.assertTrue(np.allclose(extracted_mfccs, mfccs_mean, rtol=1e-10, atol=1e-10))
         
-        # Also check that the first 13 features from extract_features are the MFCCs
+        # Also check that the first 40 features from extract_features are the MFCCs
         features = self.processor.extract_features(self.test_signal)
-        feature_mfccs = features[:13]
+        feature_mfccs = features[:40]
         
         self.assertTrue(np.allclose(feature_mfccs, extracted_mfccs, rtol=1e-10, atol=1e-10))
     
@@ -106,7 +106,7 @@ class TestAudioProcessor(unittest.TestCase):
         features = self.processor.extract_features(self.test_signal)
         
         # The last 3 elements should be spectral centroid, bandwidth, and rolloff
-        spectral_features = features[13:]
+        spectral_features = features[40:]
         
         # Check we have the expected number of spectral features
         self.assertEqual(len(spectral_features), 3)
@@ -148,7 +148,7 @@ class TestAudioProcessor(unittest.TestCase):
         
         # Check feature vector properties
         self.assertIsInstance(features, np.ndarray)
-        self.assertEqual(len(features), 16)
+        self.assertEqual(len(features), 43)
         
         # Compare with direct feature extraction from the signal
         direct_features = self.processor.extract_features(self.test_signal)
@@ -189,7 +189,7 @@ class TestAudioProcessor(unittest.TestCase):
         
         # Check feature matrix properties
         self.assertIsInstance(features_matrix, np.ndarray)
-        self.assertEqual(features_matrix.shape, (2, 16))
+        self.assertEqual(features_matrix.shape, (2, 43))
         
         # Process each file individually for comparison
         features1 = self.processor.process_file(self.test_file_path)

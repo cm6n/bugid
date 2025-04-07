@@ -35,18 +35,18 @@ class TestRealAudioFeatures(unittest.TestCase):
         print("\nExtracted Audio Features:")
         print("-" * 40)
         
-        # Print MFCC values (first 13 features)
-        for i in range(13):
+        # Print MFCC values (first 40 features)
+        for i in range(40):
             print(f"MFCC {i+1}: {features[i]}")
         
         # Print spectral features (last 3 features)
-        print(f"Spectral Centroid: {features[13]}")
-        print(f"Spectral Bandwidth: {features[14]}")
-        print(f"Spectral Rolloff: {features[15]}")
+        print(f"Spectral Centroid: {features[40]}")
+        print(f"Spectral Bandwidth: {features[41]}")
+        print(f"Spectral Rolloff: {features[42]}")
         
         # Verify feature vector properties
         self.assertIsInstance(features, np.ndarray)
-        self.assertEqual(len(features), 16)
+        self.assertEqual(len(features), 43)
         
         # Check feature values are finite
         self.assertTrue(np.all(np.isfinite(features)))
@@ -59,13 +59,13 @@ class TestRealAudioFeatures(unittest.TestCase):
         for i, (f1, f2) in enumerate(zip(features, direct_features)):
             diff = abs(f1 - f2)
             feature_name = ""
-            if i < 13:
+            if i < 40:
                 feature_name = f"MFCC {i+1}"
-            elif i == 13:
+            elif i == 40:
                 feature_name = "Spectral Centroid"
-            elif i == 14:
+            elif i == 41:
                 feature_name = "Spectral Bandwidth"
-            elif i == 15:
+            elif i == 42:
                 feature_name = "Spectral Rolloff"
             
             print(f"{feature_name} diff: {diff}")

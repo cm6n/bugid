@@ -30,7 +30,7 @@ class BugClassifier:
         """Create a TensorFlow model for bug classification."""
         self.model = tf.keras.Sequential([
             
-            tf.keras.layers.Input(shape=(16,)),  # 16 features from AudioProcessor
+            tf.keras.layers.Input(shape=(43,)),  # 43 features from AudioProcessor (40 MFCCs + 3 spectral features)
             tf.keras.layers.Dense(32, activation='relu'),
             tf.keras.layers.Dropout(0.2),
             tf.keras.layers.Dense(16, activation='relu'),
@@ -62,8 +62,8 @@ class BugClassifier:
         # Adjust output layer to match number of classes
         num_classes = len(self.label_encoder.classes_)
         self.model = tf.keras.Sequential([
-            tf.keras.layers.Input(shape=(16,)),  # 16 features from AudioProcessor
-            tf.keras.layers.Dense(16, activation='relu', dtype=tf.float32),  # Using float32 for better compatibility
+            tf.keras.layers.Input(shape=(43,)),  # 43 features from AudioProcessor (40 MFCCs + 3 spectral features)
+            tf.keras.layers.Dense(32, activation='relu', dtype=tf.float32),  # Using float32 for better compatibility
             tf.keras.layers.Dropout(0.2),
             tf.keras.layers.Dense(16, activation='relu', dtype=tf.float32),  # Using float32 for better compatibility
             tf.keras.layers.Dense(num_classes, activation='softmax', dtype=tf.float32)  # Using float32 for better compatibility
@@ -288,7 +288,7 @@ if __name__ == "__main__":
     print("Creating dummy training data for model retraining...")
     # Create dummy data with 8 classes (matching NUM_CLASSES in MainActivity.kt)
     num_samples = 100
-    num_features = 16  # Match the input shape in the model
+    num_features = 43  # Match the input shape in the model (40 MFCCs + 3 spectral features)
     
     # Generate random features
     X = np.random.rand(num_samples, num_features).astype(np.float32)

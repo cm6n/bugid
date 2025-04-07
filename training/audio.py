@@ -67,7 +67,7 @@ class AudioProcessor:
         """
         Calculate MFCC values using librosa.
         
-        Returns 13 MFCC coefficients to match the Android implementation.
+        Returns MFCC coefficients to match the Android implementation.
         """
         # Use librosa to calculate MFCCs
         # Use n_fft and hop_length values that match the Android implementation
@@ -78,7 +78,7 @@ class AudioProcessor:
         mfccs = librosa.feature.mfcc(
             y=signal, 
             sr=self.sample_rate, 
-            n_mfcc=13,  # Get 13 coefficients to match Android
+            n_mfcc=40,  # Get 40 coefficients to match Android
             n_fft=n_fft,
             hop_length=hop_length
         )
@@ -92,7 +92,7 @@ class AudioProcessor:
         """Extract relevant audio features for bug identification.
         
         Features extracted:
-        - 13 MFCCs calculated using librosa
+        - 40 MFCCs calculated using librosa
         - Spectral centroid
         - Spectral bandwidth
         - Spectral rolloff
