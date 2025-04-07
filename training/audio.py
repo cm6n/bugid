@@ -126,8 +126,8 @@ class AudioProcessor:
             weighted_sum += i * magnitude
             total_energy += magnitude
         
-        # Apply scaling factor to match Android implementation (approximately 2x)
-        scaling_factor = 2  # Determined empirically to match Android values
+        # Apply scaling factor to match Android implementation if needed. 1 is no scaling.
+        scaling_factor = 1
         
         # Adjust the centroid based on estimated frequency and apply scaling
         centroid = scaling_factor * ((weighted_sum / (total_energy + 1e-8) + estimated_frequency) / 2) if total_energy > 0 else 0
