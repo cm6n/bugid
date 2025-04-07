@@ -254,7 +254,7 @@ https://www.tensorflow.org/lite/guide/ops_select
         # Load the label encoder classes from text file
         label_encoder_path = os.path.splitext(path)[0] + '_classes.txt'
         if os.path.exists(label_encoder_path):
-            self.label_encoder.classes_ = np.loadtxt(label_encoder_path, dtype=str)
+            self.label_encoder.classes_ = np.loadtxt(label_encoder_path, dtype=str, delimiter=',')
         else:
             # For TFLite models, we can't infer classes from model structure
             # For Keras models, we can try to infer from the output layer
