@@ -171,4 +171,6 @@ class AudioProcessor:
         for file_path in file_paths:
             features = self.process_file(file_path)
             features_list.append(features)
+            print(".", end="")
+        
         return np.array(features_list)

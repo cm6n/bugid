@@ -26,7 +26,7 @@ def load_dataset(audio_dir: str) -> Tuple[List[str], List[str]]:
             continue
             
         for audio_file in os.listdir(bug_dir):
-            if audio_file.endswith(('.wav', '.mp3')):
+            if audio_file.endswith(('.wav', '.mp3', '.m4a')):
                 audio_path = os.path.join(bug_dir, audio_file)
                 audio_files.append(audio_path)
                 labels.append(bug_type)
@@ -48,7 +48,7 @@ def train(dataset_dir: str, model_output: str, report_output: str):
     """Train a new bug classifier model.
     
     DATASET_DIR should contain subdirectories, each named after a bug type,
-    containing audio recordings (.wav or .mp3) of that bug type.
+    containing audio recordings (.wav, .mp3, or .m4a) of that bug type.
     """
     click.echo("Loading dataset...")
     audio_files, labels = load_dataset(dataset_dir)

@@ -129,9 +129,9 @@ class BugClassifier:
         if model_dir and not os.path.exists(model_dir):
             os.makedirs(model_dir)
 
-        # Save the label encoder classes
-        label_encoder_path = os.path.splitext(path)[0] + '_classes.npy'
-        np.save(label_encoder_path, self.label_encoder.classes_)
+        # Save the label encoder classes as text file with one class per line
+        label_encoder_path = os.path.splitext(path)[0] + '_classes.txt'
+        np.savetxt(label_encoder_path, self.label_encoder.classes_, fmt='%s')
 
         # Convert the Keras model to TensorFlow Lite with improved compatibility
         converter = tf.lite.TFLiteConverter.from_keras_model(self.model)
@@ -251,10 +251,10 @@ https://www.tensorflow.org/lite/guide/ops_select
             # Load regular Keras model
             self.model = tf.keras.models.load_model(path)
         
-        # Load the label encoder classes
-        label_encoder_path = os.path.splitext(path)[0] + '_classes.npy'
+        # Load the label encoder classes from text file
+        label_encoder_path = os.path.splitext(path)[0] + '_classes.txt'
         if os.path.exists(label_encoder_path):
-            self.label_encoder.classes_ = np.load(label_encoder_path)
+            self.label_encoder.classes_ = np.loadtxt(label_encoder_path, dtype=str)
         else:
             # For TFLite models, we can't infer classes from model structure
             # For Keras models, we can try to infer from the output layer

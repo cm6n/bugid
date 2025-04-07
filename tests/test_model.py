@@ -56,7 +56,7 @@ class TestBugClassifier(unittest.TestCase):
             self.assertTrue(os.path.exists(model_path))
             
             # Check that classes file was also created
-            classes_path = os.path.splitext(model_path)[0] + '_classes.npy'
+            classes_path = os.path.splitext(model_path)[0] + '_classes.txt'
             self.assertTrue(os.path.exists(classes_path))
             
             # Load model in new instance
@@ -72,7 +72,7 @@ class TestBugClassifier(unittest.TestCase):
             # Cleanup
             if os.path.exists(model_path):
                 os.remove(model_path)
-            classes_path = os.path.splitext(model_path)[0] + '_classes.npy'
+            classes_path = os.path.splitext(model_path)[0] + '_classes.txt'
             if os.path.exists(classes_path):
                 os.remove(classes_path)
     

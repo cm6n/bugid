@@ -16,10 +16,10 @@ class TestCLI(unittest.TestCase):
             os.makedirs(os.path.join(tmpdir, 'cricket'))
             os.makedirs(os.path.join(tmpdir, 'beetle'))
             
-            # Create dummy audio files
+            # Create dummy audio files with different supported formats
             open(os.path.join(tmpdir, 'cricket', 'sound1.wav'), 'w').close()
-            open(os.path.join(tmpdir, 'cricket', 'sound2.wav'), 'w').close()
-            open(os.path.join(tmpdir, 'beetle', 'sound1.wav'), 'w').close()
+            open(os.path.join(tmpdir, 'cricket', 'sound2.mp3'), 'w').close()
+            open(os.path.join(tmpdir, 'beetle', 'sound1.m4a'), 'w').close()
             
             # Test loading
             files, labels = load_dataset(tmpdir)
