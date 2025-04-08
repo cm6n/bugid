@@ -95,17 +95,16 @@ def predict(audio_file: str, model: str):
     # Load and process audio
     processor = AudioProcessor()
     features = processor.process_file(audio_file)
-    
+    print(features)
     # Load model and predict
     classifier = BugClassifier(model_path=model)
     prediction = classifier.predict(features.reshape(1, -1))
     probabilities = classifier.predict_proba(features.reshape(1, -1))
-    
-    # Get probability for predicted class
-    pred_prob = max(probabilities[0])
-    
-    click.echo(f"\nPredicted bug type: {prediction[0]}")
-    click.echo(f"Confidence: {pred_prob:.2%}")
+    max_probability = max(probabilities[0])
+
+    print(f"Most likely animal: {prediction[0]}")
+    click.echo(f"Confidence: {max_probability:.2%}")
+    print(f"Predicted animal probabilities: {probabilities}")
 
 if __name__ == '__main__':
     cli()
