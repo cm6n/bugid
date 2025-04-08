@@ -5,4 +5,4 @@ cp ../../animal_sound_model.tflite ../../../../AndroidStudioProjects/bugid/app/s
 
 cp ../../animal_sound_model_classes.txt ../../../../AndroidStudioProjects/bugid/app/src/main/assets/animal_names.txt
 
-cd --
+cd -
