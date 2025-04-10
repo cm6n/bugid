@@ -28,27 +28,8 @@ class BugClassifier:
     
     def _create_model(self):
         """Create a TensorFlow model for bug classification."""
-        self.model = tf.keras.Sequential([
-            tf.keras.layers.Input(shape=(43,)),  # 43 features from AudioProcessor (40 MFCCs + 3 spectral features)
-
-            tf.keras.layers.Conv1D(64, 3, padding='same', activation='relu', input_shape=input_shape),
-            tf.keras.layers.MaxPooling1D(pool_size=2),
-            tf.keras.layers.Dropout(0.25),
-            tf.keras.layers.Conv1D(128, 3, padding='same', activation='relu'),
-            tf.keras.layers.MaxPooling1D(pool_size=2),
-            tf.keras.layers.Dropout(0.25),
-            tf.keras.layers.Flatten(),
-            tf.keras.layers.Dense(32, activation='relu'),
-            tf.keras.layers.Dropout(0.2),
-            tf.keras.layers.Dense(16, activation='relu'),
-            tf.keras.layers.Dense(2, activation='softmax')  # Will be adjusted based on number of classes
-        ])
+        self.model = None
         
-        self.model.compile(
-            optimizer='adam',
-            loss='sparse_categorical_crossentropy',
-            metrics=['accuracy']
-        )
     
     def train(self, X: np.ndarray, y: np.ndarray, test_size: float = 0.2) -> Dict:
         """Train the classifier and return performance metrics.
@@ -70,9 +51,17 @@ class BugClassifier:
         num_classes = len(self.label_encoder.classes_)
         self.model = tf.keras.Sequential([
             tf.keras.layers.Input(shape=(43,)),  # 43 features from AudioProcessor (40 MFCCs + 3 spectral features)
-            tf.keras.layers.Dense(32, activation='relu', dtype=tf.float32),  # Using float32 for better compatibility
+            tf.keras.layers.Reshape((43, 1)),  # Reshape 2D input (batch_size, 43) to 3D (batch_size, 43, 1)
+            tf.keras.layers.Conv1D(64, 3, padding='same', activation='relu'),
+            tf.keras.layers.MaxPooling1D(pool_size=2),
+            tf.keras.layers.Dropout(0.25),
+            tf.keras.layers.Conv1D(128, 3, padding='same', activation='relu'),
+            tf.keras.layers.MaxPooling1D(pool_size=2),
+            tf.keras.layers.Dropout(0.25),
+            tf.keras.layers.Flatten(),
+            tf.keras.layers.Dense(32, activation='relu'),
             tf.keras.layers.Dropout(0.2),
-            tf.keras.layers.Dense(16, activation='relu', dtype=tf.float32),  # Using float32 for better compatibility
+            tf.keras.layers.Dense(16, activation='relu'),
             tf.keras.layers.Dense(num_classes, activation='softmax', dtype=tf.float32)  # Using float32 for better compatibility
         ])
         
@@ -92,7 +81,7 @@ class BugClassifier:
         self.model.fit(
             X_train, y_train_encoded,
             epochs=50,
-            batch_size=32,
+            batch_size=4,
             validation_data=(X_test, y_test_encoded),
             verbose=0,
         )
