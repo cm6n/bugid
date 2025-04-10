@@ -57,7 +57,7 @@ def train(dataset_dir: str, model_output: str, report_output: str):
         click.echo("Error: No audio files found in dataset directory", err=True)
         return
     
-    click.echo(f"Found {len(audio_files)} audio files across {len(set(labels))} bug types")
+    click.echo(f"Found {len(audio_files)} audio files across {len(set(labels))} animal types")
     
     # Process audio files
     click.echo("Extracting audio features...")
@@ -91,7 +91,7 @@ def train(dataset_dir: str, model_output: str, report_output: str):
 @click.option('--model', '-m', type=click.Path(exists=True), required=True,
               help='Path to trained model file')
 def predict(audio_file: str, model: str):
-    """Predict bug type from an audio recording."""
+    """Predict animal type from an audio recording."""
     # Load and process audio
     processor = AudioProcessor()
     features = processor.process_file(audio_file)
