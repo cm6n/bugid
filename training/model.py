@@ -29,8 +29,15 @@ class BugClassifier:
     def _create_model(self):
         """Create a TensorFlow model for bug classification."""
         self.model = tf.keras.Sequential([
-            
             tf.keras.layers.Input(shape=(43,)),  # 43 features from AudioProcessor (40 MFCCs + 3 spectral features)
+
+            tf.keras.layers.Conv1D(64, 3, padding='same', activation='relu', input_shape=input_shape),
+            tf.keras.layers.MaxPooling1D(pool_size=2),
+            tf.keras.layers.Dropout(0.25),
+            tf.keras.layers.Conv1D(128, 3, padding='same', activation='relu'),
+            tf.keras.layers.MaxPooling1D(pool_size=2),
+            tf.keras.layers.Dropout(0.25),
+            tf.keras.layers.Flatten(),
             tf.keras.layers.Dense(32, activation='relu'),
             tf.keras.layers.Dropout(0.2),
             tf.keras.layers.Dense(16, activation='relu'),
