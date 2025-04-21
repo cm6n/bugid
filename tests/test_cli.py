@@ -4,6 +4,7 @@ import tempfile
 import os
 from click.testing import CliRunner
 from training.cli import cli, load_dataset
+from training.feature_selection import plot_features, plot_mfcc_2d, plot_features_comparison
 
 class TestCLI(unittest.TestCase):
     def setUp(self):
@@ -90,5 +91,70 @@ class TestCLI(unittest.TestCase):
             mock_classifier_instance.predict.assert_called_once()
             mock_classifier_instance.predict_proba.assert_called_once()
             
+    @patch('training.cli.plot_features')
+    @patch('training.cli.AudioProcessor')
+    def test_features_command(self, mock_processor, mock_plot_features):
+        """Test features command workflow."""
+        # Setup mocks
+        mock_processor_instance = MagicMock()
+        mock_processor.return_value = mock_processor_instance
+        
+        with tempfile.TemporaryDirectory() as tmpdir:
+            # Create mock audio file
+            audio_path = os.path.join(tmpdir, 'test.wav')
+            open(audio_path, 'w').close()
+            
+            # Run command
+            result = self.runner.invoke(cli, ['features', audio_path])
+            
+            self.assertEqual(result.exit_code, 0)
+            mock_plot_features.assert_called_once()
+    
+    @patch('training.cli.plot_mfcc_2d')
+    @patch('training.cli.AudioProcessor')
+    def test_mfcc_command(self, mock_processor, mock_plot_mfcc_2d):
+        """Test mfcc command workflow."""
+        # Setup mocks
+        mock_processor_instance = MagicMock()
+        mock_processor.return_value = mock_processor_instance
+        
+        with tempfile.TemporaryDirectory() as tmpdir:
+            # Create mock audio file
+            audio_path = os.path.join(tmpdir, 'test.wav')
+            open(audio_path, 'w').close()
+            
+            # Run command
+            result = self.runner.invoke(cli, ['mfcc', audio_path])
+            
+            self.assertEqual(result.exit_code, 0)
+            mock_plot_mfcc_2d.assert_called_once()
+    
+    @patch('training.cli.plot_features_comparison')
+    @patch('training.cli.AudioProcessor')
+    def test_compare_command(self, mock_processor, mock_plot_features_comparison):
+        """Test compare command workflow."""
+        # Setup mocks
+        mock_processor_instance = MagicMock()
+        mock_processor.return_value = mock_processor_instance
+        
+        with tempfile.TemporaryDirectory() as tmpdir:
+            # Create mock audio files
+            audio_path1 = os.path.join(tmpdir, 'test1.wav')
+            audio_path2 = os.path.join(tmpdir, 'test2.wav')
+            open(audio_path1, 'w').close()
+            open(audio_path2, 'w').close()
+            
+            # Run command with multiple files
+            result = self.runner.invoke(cli, ['compare', audio_path1, audio_path2, 
+                                             '--labels', 'Bug A', 'Bug B'])
+            
+            self.assertEqual(result.exit_code, 0)
+            mock_plot_features_comparison.assert_called_once()
+            
+            # Check that the arguments were passed correctly
+            args, kwargs = mock_plot_features_comparison.call_args
+            self.assertEqual(len(args[0]), 2)  # Two audio files
+            self.assertEqual(len(args[1]), 2)  # Two labels
+
 if __name__ == '__main__':
     unittest.main()

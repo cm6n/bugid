@@ -4,6 +4,7 @@ from typing import List, Tuple
 import json
 from training.audio import AudioProcessor
 from training.model import BugClassifier
+from training.feature_selection import plot_features, plot_mfcc_2d, plot_features_comparison
 
 def load_dataset(audio_dir: str) -> Tuple[List[str], List[str]]:
     """Load dataset from directory structure.
@@ -105,6 +106,53 @@ def predict(audio_file: str, model: str):
     print(f"Most likely animal: {prediction[0]}")
     click.echo(f"Confidence: {max_probability:.2%}")
     print(f"Predicted animal probabilities: {probabilities}")
+
+@cli.command()
+@click.argument('audio_file', type=click.Path(exists=True))
+@click.option('--title', '-t', help='Title for the plot')
+def features(audio_file: str, title: str = None):
+    """Visualize extracted features from an audio file.
+    
+    This command plots the MFCCs, spectral features, waveform, and spectrogram
+    of the provided audio file.
+    """
+    click.echo(f"Visualizing features for {audio_file}...")
+    plot_features(audio_file, title=title)
+
+@cli.command()
+@click.argument('audio_file', type=click.Path(exists=True))
+@click.option('--title', '-t', help='Title for the plot')
+def mfcc(audio_file: str, title: str = None):
+    """Visualize spectrogram and MFCC in 2D before taking the mean.
+    
+    This command plots the waveform, spectrogram, and MFCC coefficients
+    over time (before taking the mean) for the provided audio file.
+    """
+    click.echo(f"Visualizing MFCC for {audio_file}...")
+    plot_mfcc_2d(audio_file, title=title)
+
+@cli.command()
+@click.argument('audio_files', type=click.Path(exists=True), nargs=-1, required=True)
+@click.option('--labels', '-l', multiple=True, help='Labels for each audio file')
+def compare(audio_files, labels=None):
+    """Compare features from multiple audio files.
+    
+    This command plots and compares the MFCCs and spectral features
+    from multiple audio files side by side.
+    
+    Example:
+    training.cli compare file1.wav file2.wav --labels "Bug A" "Bug B"
+    """
+    if not audio_files:
+        click.echo("Error: At least one audio file must be provided", err=True)
+        return
+    
+    if labels and len(labels) != len(audio_files):
+        click.echo("Warning: Number of labels doesn't match number of audio files. Using default labels.", err=True)
+        labels = None
+    
+    click.echo(f"Comparing features for {len(audio_files)} audio files...")
+    plot_features_comparison(list(audio_files), labels)
 
 if __name__ == '__main__':
     cli()
