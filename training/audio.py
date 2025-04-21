@@ -84,7 +84,6 @@ class AudioProcessor:
         )
         
         # Take the mean of each coefficient across all frames
-        print(f"MFCCs shape: {mfccs.shape}")
         mfcc_means = np.mean(mfccs, axis=1)
 
         

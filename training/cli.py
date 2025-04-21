@@ -132,27 +132,28 @@ def mfcc(audio_file: str, title: str = None):
     plot_mfcc_2d(audio_file, title=title)
 
 @cli.command()
-@click.argument('audio_files', type=click.Path(exists=True), nargs=-1, required=True)
-@click.option('--labels', '-l', multiple=True, help='Labels for each audio file')
-def compare(audio_files, labels=None):
-    """Compare features from multiple audio files.
+@click.argument('paths', type=click.Path(exists=True), nargs=-1, required=True)
+@click.option('--labels', '-l', multiple=True, help='Labels for each path (file or directory)')
+def compare(paths, labels=None):
+    """Compare features from multiple audio files or directories.
     
     This command plots and compares the MFCCs and spectral features
-    from multiple audio files side by side.
+    from multiple audio files or directories side by side.
     
-    Example:
-    training.cli compare file1.wav file2.wav --labels "Bug A" "Bug B"
+    If a directory is provided, all audio files in that directory will be processed
+    and the directory name will be used as the label if no label is provided.
+    
+    Examples:
+    training.cli compare file1.wav file2.wav --labels "Bug A" --labels "Bug B"
+    training.cli compare directory1 directory2
+    training.cli compare file1.wav directory1 --labels "Single File" --labels "Directory Files"
     """
-    if not audio_files:
-        click.echo("Error: At least one audio file must be provided", err=True)
+    if not paths:
+        click.echo("Error: At least one path must be provided", err=True)
         return
     
-    if labels and len(labels) != len(audio_files):
-        click.echo("Warning: Number of labels doesn't match number of audio files. Using default labels.", err=True)
-        labels = None
-    
-    click.echo(f"Comparing features for {len(audio_files)} audio files...")
-    plot_features_comparison(list(audio_files), labels)
+    click.echo(f"Comparing features for {len(paths)} paths...")
+    plot_features_comparison(list(paths), labels if labels else None)
 
 if __name__ == '__main__':
     cli()
